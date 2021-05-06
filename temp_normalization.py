@@ -453,7 +453,7 @@ def main():
         except:
             pass
     print("done")
-    plant_detections.to_csv('indiv_temp_depression.csv')
+    plant_detections.to_csv(f'{args.date}_indiv_temp_depression.csv')
 
 #----------------------------------
 if __name__ == '__main__':
