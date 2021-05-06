@@ -253,11 +253,11 @@ def AZMget(JSON_df):
             result_index = time
             print(result_index)
 
-            AZmet_temp = AZMet_df['Air Temperature'].loc[result_index]
-            AZmet_wind = AZMet_df['Avg Wind Speed'].loc[result_index]
-            AZmet_vpd = AZMet_df['VPD'].loc[result_index]
-            AZmet_solar = AZMet_df['Solar Radiation'].loc[result_index]
-            AZmet_rh = AZMet_df['Relative Humidity'].loc[result_index]
+            AZmet_temp = AZMet_df['Air Temperature'].loc[f'{result_index}']
+            AZmet_wind = AZMet_df['Avg Wind Speed'].loc[f'{result_index}']
+            AZmet_vpd = AZMet_df['VPD'].loc[f'{result_index}']
+            AZmet_solar = AZMet_df['Solar Radiation'].loc[f'{result_index}']
+            AZmet_rh = AZMet_df['Relative Humidity'].loc[f'{result_index}']
             Env_temp = EL['Temperature'].loc[f'{result_index}']
             Env_wind = EL['Wind velocity'].loc[f'{result_index}']
             AZmet_dict[cnt] = {'azmet_atm_temp': AZmet_temp, 'azmet_wind_velocity': AZmet_wind, 'azmet_VPD': AZmet_vpd, 'azmet_solar_radiation':
