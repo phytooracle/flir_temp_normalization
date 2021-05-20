@@ -206,7 +206,7 @@ def AZMget(JSON_df):
     args = get_args()
     season = args.season
 
-    if season == "season_10_lettuce_yr_2020":
+    if season == "season_10_lettuce_yr_2020" or season == "season_11_sorghum_yr_2020":
         url = "https://cals.arizona.edu/azmet/data/0620rh.txt"
     else:
         url = "https://cals.arizona.edu/azmet/data/0621rh.txt"
@@ -241,6 +241,7 @@ def AZMget(JSON_df):
     image_file = JSON_df
     image_file['time'] = pd.to_datetime(image_file['time'])
     AZmet_dict = {}
+    AZMet_df.to_csv("needtoupder.csv")
 
     EL = Env_data()
     EL = EL.set_index('Time')
@@ -328,6 +329,7 @@ def expand_plots(all_temp):
 
 def main():
     args = get_args()
+    season = args.season
     # md_shp()
     Env_data()
     AZMet_data = AZMget(md_shp())
@@ -381,11 +383,20 @@ def main():
 
             select_df = df_agg.set_index('plot').loc[plot]
 
-            time = select_df['time'].to_string()
-            firstDelPos=time.find("MAC")
-            secondDelPos=time.find("202")
-            time = time.replace('plot', '').replace(time[firstDelPos:secondDelPos], '').replace("\n", ' ')
-            print(time)
+            if season == "season_10_lettuce_yr_2020":
+
+                time = select_df['time'].to_string()
+                firstDelPos=time.find("MAC")
+                secondDelPos=time.find("202")
+                time = time.replace('plot', '').replace(time[firstDelPos:secondDelPos], '').replace("\n", ' ')
+                print(time)
+
+            if season == "season_11_sorghum_yr_2020":
+
+                time = select_df['time'].to_string()
+                time = time.replace('plot', '').replace("\n", ' ').replace('    ', ' ')
+                print(time)
+
             temp_median = select_df['azmet_atm_temp'].median()
             temp_mean = select_df['azmet_atm_temp'].mean()
             temp_std = select_df['azmet_atm_temp'].std()
@@ -414,6 +425,7 @@ def main():
 
     ## Converts dictionary with stats into a dataframe and sets the plot as the index
     result = pd.DataFrame.from_dict(temp_dict, orient='index').set_index('plot')
+    # result.to_csv("result.csv")
 
     ## Reads in the csv with the individual plant temperatures (produced by the pipeline)
     plant_detections = pd.read_csv(args.thermal)
@@ -423,35 +435,82 @@ def main():
 
     for i, row in plant_detections.iterrows():
 
-        try:
-            plot = row['plot'].replace('_', ' ')
-            plant_temp = row['median']
-            
-            temp_df = result.loc[plot]
-            atm_temp = temp_df['median']
-            norm_temp =  atm_temp - (plant_temp - 273.15)
-            
-            azmet_wind_vel = temp_df['azmet_wind_velocity']
-            azmet_vpd = temp_df['azmet_VPD']
-            sol_rad = temp_df['azmet_solar_radiation']
-            temp = temp_df['env_temp']
-            wind_vel = temp_df['env_wind']
-            rel_hum = temp_df['relative_humidity']
-            
-            plant_detections.at[i, 'norm_temp'] = norm_temp
-            plant_detections.at[i, 'atm_temp'] = atm_temp
-            
-            plant_detections.at[i, 'azmet_wind_velocity'] = azmet_wind_vel
-            plant_detections.at[i, 'azmet_VPD'] = azmet_vpd
-            plant_detections.at[i, 'azmet_solar_radiation'] = sol_rad
-            plant_detections.at[i, 'env_temp'] = temp
-            plant_detections.at[i, 'env_wind'] = wind_vel
-            plant_detections.at[i, 'relative_humidity'] = rel_hum
-            plant_detections.at[i, 'date'] = temp_df['time']
+        if season == "season_11_sorghum_yr_2020":
 
-            #print(atm_temp)
-        except:
-            pass
+            try:
+                plot = row['plot'] #.replace('_', ' ')
+                plot = str(plot)
+
+                plant_temp = row['median']
+                # print(plant_temp)
+                # print(plot)
+                # print(result.loc[plot]) #######
+                # result.loc[plot]
+                
+                temp_df = result.loc[plot]
+                atm_temp = temp_df['median']
+                norm_temp =  atm_temp - (plant_temp - 273.15)
+                azmet_wind_vel = temp_df['azmet_wind_velocity']
+                azmet_vpd = temp_df['azmet_VPD']
+                sol_rad = temp_df['azmet_solar_radiation']
+                temp = temp_df['env_temp']
+                wind_vel = temp_df['env_wind']
+                rel_hum = temp_df['relative_humidity']
+                
+                plant_detections.at[i, 'norm_temp'] = norm_temp
+                plant_detections.at[i, 'atm_temp'] = atm_temp
+                # # print(plant_detections['atm_temp'])
+                
+                plant_detections.at[i, 'azmet_wind_velocity'] = azmet_wind_vel
+                plant_detections.at[i, 'azmet_VPD'] = azmet_vpd
+                plant_detections.at[i, 'azmet_solar_radiation'] = sol_rad
+                plant_detections.at[i, 'env_temp'] = temp
+                plant_detections.at[i, 'env_wind'] = wind_vel
+                plant_detections.at[i, 'relative_humidity'] = rel_hum
+                plant_detections.at[i, 'date'] = temp_df['time']
+                print(plant_detections['date'])
+
+                print(atm_temp)
+            except:
+                print("Skipping specific plot as there is no data found.")
+                pass
+
+        if season == "season_10_lettuce_yr_2020":
+
+            try:
+                plot = row['plot'] #.replace('_', ' ')
+                plot = str(plot)
+
+                plant_temp = row['median']
+                
+                temp_df = result.loc[plot]
+                atm_temp = temp_df['median']
+                norm_temp =  atm_temp - (plant_temp - 273.15)
+                azmet_wind_vel = temp_df['azmet_wind_velocity']
+                azmet_vpd = temp_df['azmet_VPD']
+                sol_rad = temp_df['azmet_solar_radiation']
+                temp = temp_df['env_temp']
+                wind_vel = temp_df['env_wind']
+                rel_hum = temp_df['relative_humidity']
+                
+                plant_detections.at[i, 'norm_temp'] = norm_temp
+                plant_detections.at[i, 'atm_temp'] = atm_temp
+                # # print(plant_detections['atm_temp'])
+                
+                plant_detections.at[i, 'azmet_wind_velocity'] = azmet_wind_vel
+                plant_detections.at[i, 'azmet_VPD'] = azmet_vpd
+                plant_detections.at[i, 'azmet_solar_radiation'] = sol_rad
+                plant_detections.at[i, 'env_temp'] = temp
+                plant_detections.at[i, 'env_wind'] = wind_vel
+                plant_detections.at[i, 'relative_humidity'] = rel_hum
+                plant_detections.at[i, 'date'] = temp_df['time']
+                print(plant_detections['date'])
+
+                print(atm_temp)
+            except:
+                print("Skipping specific plot as there is no data found.")
+                pass
+            
     print("done")
     plant_detections.to_csv(f'{args.date}_indiv_temp_depression.csv')
 
