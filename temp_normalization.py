@@ -2,7 +2,7 @@ import os
 import glob
 import subprocess
 import json
-from terrautils.spatial import scanalyzer_to_latlon
+import utm
 import pandas as pd
 import numpy as np
 import geopandas as gpd
@@ -58,7 +58,35 @@ def get_args():
     return parser.parse_args()
 
 #----------------------------------
+def utm_to_latlon(utm_x, utm_y):
+    """Convert coordinates from UTM 12N to lat/lon"""
 
+    # Get UTM information from southeast corner of field
+    SE_utm = utm.from_latlon(33.07451869, -111.97477775)
+    utm_zone = SE_utm[2]
+    utm_num  = SE_utm[3]
+
+    return utm.to_latlon(utm_x, utm_y, utm_zone, utm_num)
+
+def scanalyzer_to_latlon(gantry_x, gantry_y):
+    """Convert coordinates from gantry to lat/lon"""
+    utm_x, utm_y = scanalyzer_to_utm(gantry_x, gantry_y)
+    return utm_to_latlon(utm_x, utm_y)
+
+def scanalyzer_to_utm(gantry_x, gantry_y):
+    """Convert coordinates from gantry to UTM 12N"""
+
+    # TODO: Hard-coded
+    # Linear transformation coefficients
+    ay = 3659974.971; by = 1.0002; cy = 0.0078;
+    ax = 409012.2032; bx = 0.009; cx = - 0.9986;
+
+    utm_x = ax + (bx * gantry_x) + (cx * gantry_y)
+    utm_y = ay + (by * gantry_x) + (cy * gantry_y)
+
+    return utm_x, utm_y
+
+#----------------------------------
 ## Gathers gantry x, y, z, coordinates as well as time
 ## Converts coordinates to lat lon
 def md_shp():
